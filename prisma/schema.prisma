@@ -1,0 +1,192 @@
+// schema.prisma
+
+datasource db {
+  provider = "mysql" // 或者您使用的数据库
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model tenement_info {
+  tenement_id          Int               @id
+  user_id              Int
+  tenement_no          Int
+  tenement_face        String
+  Total_rating         Int
+  main_building        Int
+  affiliated_building  Int
+  public_buliding      Int
+  management_fee       Int
+  tenement_status      Int
+  tenement_type        Int
+  tenement_photo       Json
+  tenement_floor       Int
+  tenement_style       String
+  rent_info            rent_info[]
+  sell_info            sell_info[]
+  market_info          market_info[]
+  develop_info         develop_info[]
+  buyer_info           buyer_info[]
+  renter_info          renter_info[]
+  rent_notice          rent_notice[]
+  sell_notice          sell_notice[]
+  market_notice        market_notice[]
+  develop_notice       develop_notice[]
+  collection_info      collection_info[]
+  user                 user               @relation(fields: [user_id], references: [user_id])
+}
+
+model rent_notice {
+  rent_id      Int      @id
+  rent_record  String
+  rent_notice  String
+  visit_date   DateTime
+  notice_date  DateTime
+  tenement_id  Int
+  tenement     tenement_info @relation(fields: [tenement_id], references: [tenement_id])
+}
+
+model sell_notice {
+  sell_id      Int      @id
+  sell_record  String
+  sell_notice  String
+  visit_date   DateTime
+  notice_date  DateTime
+  tenement_id  Int
+  tenement     tenement_info @relation(fields: [tenement_id], references: [tenement_id])
+}
+
+model develop_notice {
+  develop_id      Int      @id
+  develop_record  String
+  develop_feedback String
+  visit_date      DateTime
+  notice_date     DateTime
+  tenement_id     Int
+  tenement        tenement_info @relation(fields: [tenement_id], references: [tenement_id])
+}
+
+model market_notice {
+  market_id        Int      @id
+  market_hint      String
+  market_remark    String
+  market_content   String
+  market_responses String
+  market_date      DateTime
+  tenement_id      Int
+  tenement         tenement_info @relation(fields: [tenement_id], references: [tenement_id])
+}
+
+model rent_info {
+  rent_id            Int             @id
+  owner_name         String
+  owner_phone        String
+  owner_telephone    String
+  owner_line         String
+  owner_remittance   String
+  rental             Int
+  deposit            Int
+  tenement_id        Int
+  tenement           tenement_info   @relation(fields: [tenement_id], references: [tenement_id])
+}
+
+model sell_info {
+  sell_id            Int             @id
+  owner_name         String
+  owner_phone        String
+  owner_telephone    String
+  owner_line         String
+  owner_remittance   String
+  price              Int
+  tenement_id        Int
+  tenement           tenement_info   @relation(fields: [tenement_id], references: [tenement_id])
+}
+
+model develop_info {
+  develop_id         Int             @id
+  owner_name         String
+  owner_phone        String
+  owner_telephone    String
+  owner_line         String
+  owner_remittance   String
+  rental             Int
+  deposit            Int
+  price              Int
+  tenement_id        Int
+  tenement           tenement_info   @relation(fields: [tenement_id], references: [tenement_id])
+}
+
+model market_info {
+  market_id          Int             @id
+  owner_name         String
+  owner_phone        String
+  owner_telephone    String
+  owner_line         String
+  owner_demand       String
+  owner_want         String
+  min_budget         Int
+  max_budget         Int
+  tenement_id        Int
+  tenement           tenement_info   @relation(fields: [tenement_id], references: [tenement_id])
+}
+
+model buyer_info {
+  buyer_id           Int             @id
+  order_date         String
+  delivery_date      String
+  buyer_name         String
+  buyer_phone        String
+  buyer_jobtitle     String
+  buyer_idcard_image Json
+  tenement_id        Int
+  tenement           tenement_info   @relation(fields: [tenement_id], references: [tenement_id])
+}
+
+model renter_info {
+  renter_id           Int             @id
+  start_date          DateTime
+  end_date            DateTime
+  renter_name         String
+  renter_phone        String
+  renter_jobtitle     String
+  guarantor_name      String
+  guarantor_phone     String
+  renter_idcard_image Json
+  renter_agreement    String
+  tenement_id         Int
+  tenement            tenement_info   @relation(fields: [tenement_id], references: [tenement_id])
+}
+
+model collection_info {
+  collection_id       Int             @id
+  tenement_id         Int
+  collection_name     String
+  price               Int
+  payment             Int
+  collection_remark   String
+  remittance_bank     String
+  remittance_account  String
+  tenement            tenement_info   @relation(fields: [tenement_id], references: [tenement_id])
+  collection_notice   collection_notice[]
+}
+
+model collection_notice {
+  notice_id           Int               @id
+  collection_id       Int
+  collection_record   String
+  collection_notice   String
+  visit_date          DateTime
+  notice_date         DateTime
+  collection          collection_info   @relation(fields: [collection_id], references: [collection_id])
+}
+
+model user {
+  user_id        Int             @id
+  user_name      String
+  user_email     String
+  user_password  String
+  status         Boolean
+  tenement_info  tenement_info[]
+}
