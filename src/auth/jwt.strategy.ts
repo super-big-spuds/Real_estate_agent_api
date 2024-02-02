@@ -8,18 +8,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_SECRET || 'your-secret-key',
+      secretOrKey: process.env.JWT_SECRET || '123456',
     });
   }
 
   async validate(payload: any) {
-    console.log(payload)
+    //console.log('payload', payload);
     return {
       userId: payload.sub,
       username: payload.user_name,
-      isadmin: payload.isadmin // 确保 JWT payload 中包含此字段
+      isadmin: payload.isadmin,
     };
   }
 }
-
-
