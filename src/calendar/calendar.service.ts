@@ -4,7 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class CalendarService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async getTenementCalendarEvents(year: number, month: number) {
     const yearStr = year.toString();
@@ -78,7 +78,7 @@ export class CalendarService {
   ) {
     const yearStr = year.toString();
     const monthStr = month.toString().padStart(2, '0');
-  
+
     const collections = await this.prisma.collection.findMany({
       where: {
         AND: [
@@ -92,7 +92,7 @@ export class CalendarService {
         ],
       },
     });
-  
+
     return {
       message: 'Successfully retrieved the collection',
       data: collections,
@@ -105,7 +105,7 @@ export class CalendarService {
     const eventsByDay = {};
 
     notices.forEach((notice) => {
-      const date = new Date(notice.visitDate);
+      const date = new Date(notice.remindDate);
       const day = date.getDate();
 
       if (!eventsByDay[day]) {
@@ -128,7 +128,7 @@ export class CalendarService {
     const groupedByDay = {};
 
     notices.forEach((notice) => {
-      const date = new Date(notice.visitDate);
+      const date = new Date(notice.remindDate);
       const day = date.getDate();
 
       if (!groupedByDay[day]) {
