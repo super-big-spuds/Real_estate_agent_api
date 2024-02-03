@@ -13,7 +13,7 @@ model Tenement {
   tenement_product_type String
   tenement_type         String
   tenement_status       String
-  tenement_face         String
+  tenement_face         String?
   tenement_images       String
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
@@ -93,25 +93,25 @@ model Tenement_Sell {
 
 model Tenement_Create {
   tenement_id                      Int                @id
-  total_rating                     Int
-  main_building                    Int
-  inside_rating                    Int
-  affiliated_building              Int
-  public_building                  Int
-  unregistered_area                Int
-  management_magnification         Int
-  management_fee                   Int
-  tenement_floor                   Int
-  tenement_host_name               String
-  tenement_host_telphone           String
-  tenement_host_phone              String
-  tenement_host_line               String
-  tenement_host_remittance_bank    String
-  tenement_host_remittance_account String
-  tenement_host_address            String
-  tenement_host_birthday           String
-  tenement_host_hobby              String
-  tenement_host_remark             String
+  total_rating                     Int?
+  main_building                    Int?
+  inside_rating                    Int?
+  affiliated_building              Int?
+  public_building                  Int?
+  unregistered_area                Int?
+  management_magnification         Int?
+  management_fee                   Int?
+  tenement_floor                   Int?
+  tenement_host_name               String?
+  tenement_host_telphone           String?
+  tenement_host_phone              String?
+  tenement_host_line               String?
+  tenement_host_remittance_bank    String?
+  tenement_host_remittance_account String?
+  tenement_host_address            String?
+  tenement_host_birthday           String?
+  tenement_host_hobby              String?
+  tenement_host_remark             String?
   deposit_price                    Int?
   selling_price                    Int?
   rent_price                       Int?
@@ -126,17 +126,17 @@ model Tenement_Create {
 model Collection {
   id                     Int                 @id @default(autoincrement())
   tenement_no            String
-  collection_name        String
-  collection_type        String
-  price                  String
-  payment                String
-  collection_remark      String
-  collection_date        String
-  remittance_bank        String
-  remittance_account     String
-  cus_remittance_account String
-  cus_remittance_bank    String
-  collection_complete    String
+  collection_name        String?
+  collection_type        String?
+  price                  String?
+  payment                String?
+  collection_remark      String?
+  collection_date        String?
+  remittance_bank        String?
+  remittance_account     String?
+  cus_remittance_account String?
+  cus_remittance_bank    String?
+  collection_complete    String?
   createdAt              DateTime            @default(now())
   updatedAt              DateTime            @updatedAt
   owner                  Int
@@ -148,10 +148,10 @@ model Collection {
 model Collection_Notice {
   id            Int        @id @default(autoincrement())
   collection_id Int
-  visitDate     String
-  record        String
-  remindDate    String
-  remind        String
+  visitDate     String?
+  record        String?
+  remindDate    String?
+  remind        String?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   Collection    Collection @relation(fields: [collection_id], references: [id])
@@ -160,10 +160,10 @@ model Collection_Notice {
 model Tenement_Notice {
   id          Int      @id @default(autoincrement())
   tenement_id Int
-  visitDate   String
-  record      String
-  remindDate  String
-  remind      String
+  visitDate   String?
+  record      String?
+  remindDate  String?
+  remind      String?
   type        String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
