@@ -1084,9 +1084,9 @@ export class TenementService {
   }
 
   async deleteTenementRent(tenementId: number): Promise<{ message: string }> {
-    await this.prisma.tenement_Rent.updateMany({
+    await this.prisma.tenement.updateMany({
       where: {
-        tenement_id: tenementId,
+        id: tenementId,
         is_deleted: false,
       },
       data: {
@@ -1100,9 +1100,9 @@ export class TenementService {
   async deleteTenementDevelop(
     tenementId: number,
   ): Promise<{ message: string }> {
-    await this.prisma.tenement_Develop.updateMany({
+    await this.prisma.tenement.updateMany({
       where: {
-        tenement_id: tenementId,
+        id: tenementId,
         is_deleted: false,
       },
       data: {
@@ -1114,9 +1114,9 @@ export class TenementService {
   }
 
   async deleteTenementMarket(tenementId: number): Promise<{ message: string }> {
-    await this.prisma.tenement_Market.updateMany({
+    await this.prisma.tenement.updateMany({
       where: {
-        tenement_id: tenementId,
+        id: tenementId,
         is_deleted: false,
       },
       data: {
@@ -1128,10 +1128,10 @@ export class TenementService {
   }
 
   async deleteTenementSell(tenementId: number): Promise<{ message: string }> {
-    await this.prisma.tenement_Sell.updateMany({
+    await this.prisma.tenement.updateMany({
       where: {
-        tenement_id: tenementId,
-        is_deleted: false, // 只更新未被删除的记录
+        id: tenementId,
+        is_deleted: false,
       },
       data: {
         is_deleted: true,
@@ -1139,6 +1139,29 @@ export class TenementService {
     });
 
     return { message: 'Tenement sell successfully deleted' };
+  }
+
+  async rollbackDeleteTenement(tenementId: number, tenementType: string): Promise<any> {
+    switch (tenementType) {
+      case 'Create':
+        // 实现撤销删除逻辑
+        break;
+      case 'Rent':
+        // 实现撤销删除逻辑
+        break;
+      case 'Sell':
+        // 实现撤销删除逻辑
+        break;
+      case 'Develop':
+        // 实现撤销删除逻辑
+        break;
+      case 'Market':
+        // 实现撤销删除逻辑
+        break;
+      default:
+        throw new BadRequestException('Invalid tenement type');
+    }
+    // 返回操作结果
   }
 
   async updateTenementSell(
