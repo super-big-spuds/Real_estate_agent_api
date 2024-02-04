@@ -1177,6 +1177,7 @@ export class TenementService {
         buyer_phone: updateData.buyer_phone,
         buyer_jobtitle: updateData.buyer_jobtitle,
         buyer_remark: updateData.buyer_remark,
+        is_deleted: false,
       },
     });
 
@@ -1250,6 +1251,7 @@ export class TenementService {
         renter_guarantor_name: updateData.renter_guarantor_name,
         renter_guarantor_phone: updateData.renter_guarantor_phone,
         renter_remark: updateData.renter_remark,
+        is_deleted: false,
         // 可以添加其他 Tenement_Rent 字段
       },
     });
@@ -1305,6 +1307,13 @@ export class TenementService {
         tenement_host_birthday: updateData.tenement_host_birthday,
         tenement_host_hobby: updateData.tenement_host_hobby,
         tenement_host_remark: updateData.tenement_host_remark,
+        
+      },
+    });
+    await this.prisma.tenement_Develop.update({
+      where: { tenement_id: tenementId },
+      data: {
+        is_deleted: false,
       },
     });
 
@@ -1352,6 +1361,7 @@ export class TenementService {
         hopefloor_max: updateTenementMarketDto.hopefloor_max,
         hopefloor_min: updateTenementMarketDto.hopefloor_min,
         market_state: updateTenementMarketDto.market_state,
+        is_deleted: false,
       },
     });
 
