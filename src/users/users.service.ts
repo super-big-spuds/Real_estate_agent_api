@@ -170,7 +170,7 @@ export class UsersService {
           user_email: adminEmail,
           user_password: hashedPassword,
           isadmin: true,
-          status: false,
+          status: true,
         },
       });
     } else {
