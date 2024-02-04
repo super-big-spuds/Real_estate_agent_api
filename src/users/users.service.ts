@@ -115,6 +115,16 @@ export class UsersService {
       },
     });
   }
+  async rollbackdeleteUser(userId: number): Promise<User> {
+    return this.prisma.user.update({
+      where: {
+        user_id: userId,
+      },
+      data: {
+        is_true_deleted: true,
+      },
+    });
+  }
 
   async getUsers(isDeleted: boolean): Promise<GetUserListDto[]> {
     console.log('isDeleted', isDeleted);
