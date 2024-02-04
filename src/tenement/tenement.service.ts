@@ -172,10 +172,7 @@ export class TenementService {
   
   
 
-  async getAllTenementSells(
-    isadmin: boolean,
-    userId: number,
-  ): Promise<{ message: string; data: any[] }> {
+  async getAllTenementSells(isadmin: boolean, userId: number): Promise<{ message: string; data: any[] }> {
     try {
       const queryOptions = {
         include: {
@@ -184,37 +181,32 @@ export class TenementService {
               Tenement: true,
             },
           },
-  
-          
         },
-        where: { // 加入`is_deleted`的判断
-          is_deleted: false,
+        where: {
+          is_deleted: false, // 确保只获取未标记为删除的销售记录
         },
       };
       
       if (!isadmin) {
-        // 非管理员用户还需要确保他们只能看到自己的记录
-        queryOptions['where']['Tenement_Create'] = {
+        // 非管理员用户，确保只能看到属于自己的记录
+        // 通过Tenement_Create关联到Tenement，再通过Tenement的owner字段进行过滤
+        queryOptions.where['Tenement_Create'] = {
           Tenement: {
             owner: userId,
+            is_deleted: false, // 同时确保Tenement本身也未被标记为删除
           },
         };
       }
-      queryOptions['where']['Tenement'] = {
-        Tenement: {
-          is_deleted:false,
-        },
-      };
+  
       const tenementSells = await this.prisma.tenement_Sell.findMany(queryOptions);
-
+  
       const data = tenementSells.map((sell) => ({
         tenement_id: sell.tenement_id,
         tenement_address: sell.Tenement_Create.Tenement.tenement_address,
         tenement_face: sell.Tenement_Create.Tenement.tenement_face,
         tenement_status: sell.Tenement_Create.Tenement.tenement_status,
         tenement_type: sell.Tenement_Create.Tenement.tenement_type,
-        tenement_product_type:
-          sell.Tenement_Create.Tenement.tenement_product_type,
+        tenement_product_type: sell.Tenement_Create.Tenement.tenement_product_type,
         management_fee_bottom: sell.Tenement_Create.management_fee,
         management_floor_bottom: sell.Tenement_Create.tenement_floor,
         selling_price: sell.Tenement_Create.selling_price,
@@ -223,19 +215,17 @@ export class TenementService {
         public_building: sell.Tenement_Create.public_building,
         tenement_floor: sell.Tenement_Create.tenement_floor,
       }));
-
-      return { message: 'Successfully update the media', data };
+  
+      return { message: 'Successfully retrieved tenement sells', data };
     } catch (error) {
       throw new InternalServerErrorException(
         'An error occurred while retrieving tenements sells.',
       );
     }
   }
+  
 
-  async getAllTenementRents(
-    isadmin: boolean,
-    userId: number,
-  ): Promise<{ message: string; data: any[] }> {
+  async getAllTenementRents(isadmin: boolean, userId: number): Promise<{ message: string; data: any[] }> {
     try {
       const queryOptions = {
         include: {
@@ -252,35 +242,36 @@ export class TenementService {
       
       if (!isadmin) {
         // 非管理员用户还需要确保他们只能看到自己的记录
-        queryOptions['where']['Tenement_Create'] = {
+        queryOptions.where['Tenement_Create'] = {
           Tenement: {
             owner: userId,
+            is_deleted: false, // 确保Tenement本身也未被标记为删除
           },
         };
       }
-
-      const tenementRents =await this.prisma.tenement_Rent.findMany(queryOptions);
-
+  
+      const tenementRents = await this.prisma.tenement_Rent.findMany(queryOptions);
+  
       const data = tenementRents.map((rent) => ({
         tenement_id: rent.tenement_id,
         tenement_product_type: rent.Tenement_Create.Tenement.tenement_product_type,
         tenement_address: rent.Tenement_Create.Tenement.tenement_address,
         tenement_face: rent.Tenement_Create.Tenement.tenement_face,
-        tenement_status: rent.Tenement_Create.Tenement.tenement_type, // 假设 tenement_status 存在于 Tenement 表中
-        tenement_type: rent.Tenement_Create.Tenement.tenement_product_type, // 假设 tenement_type 存在于 Tenement 表中
+        tenement_status: rent.Tenement_Create.Tenement.tenement_status, // 正确引用Tenement的状态
+        tenement_type: rent.Tenement_Create.Tenement.tenement_type, // 正确引用Tenement的类型
         management_fee_bottom: rent.Tenement_Create.management_fee,
         management_floor_bottom: rent.Tenement_Create.tenement_floor,
-        rent: rent.Tenement_Create.rent_price,
-        Total_rating: rent.Tenement_Create.total_rating,
+        rent_price: rent.Tenement_Create.rent_price, // 使用正确的属性名
+        total_rating: rent.Tenement_Create.total_rating,
         inside_rating: rent.Tenement_Create.inside_rating,
         public_building: rent.Tenement_Create.public_building,
         tenement_floor: rent.Tenement_Create.tenement_floor,
       }));
-
-      return { message: 'Successfully update the media', data };
+  
+      return { message: 'Successfully retrieved tenement rents', data };
     } catch (error) {
       throw new InternalServerErrorException(
-        'An error occurred while retrieving tenements rents.',
+        'An error occurred while retrieving tenements rents.'
       );
     }
   }
