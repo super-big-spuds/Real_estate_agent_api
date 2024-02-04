@@ -21,7 +21,7 @@ import { TenementRentQueryDto } from './dto/get-rents-fillter.dto';
 export class TenementService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllTenements(): Promise<{ message: string; data: any[] }> {
+  async getAllTenements(isDeleted:boolean): Promise<{ message: string; data: any[] }> {
     const tenements = await this.prisma.tenement.findMany();
     type TenementWithFeeAndFloor = {
       tenement_id: number;
@@ -41,11 +41,23 @@ export class TenementService {
             where: { tenement_id: cur.id },
           });
   
+          const tenementRent = await this.prisma.tenement_Rent.findUnique({
+            where: { tenement_id: cur.id, is_deleted: isDeleted },
+          });
+
+          const tenementSell = await this.prisma.tenement_Sell.findUnique({
+            where: { tenement_id: cur.id, is_deleted: isDeleted },
+          });
+          const tenementDevelop = await this.prisma.tenement_Develop.findUnique({
+            where: { tenement_id: cur.id, is_deleted: isDeleted },
+          });
+    
           const marketTenement = await this.prisma.tenement_Market.findUnique({
-            where: { tenement_id: cur.id },
+            where: { tenement_id: cur.id , is_deleted: isDeleted,},
+           
           });
   
-          if (!tenementCreate && !marketTenement) return null;
+          if (!tenementCreate && !tenementRent && !tenementDevelop && !tenementSell) return null;
   
           return {
             tenement_id: cur.id,
@@ -77,7 +89,7 @@ export class TenementService {
     };
   }
   
-  async getTenementsByUserId(userId: number): Promise<{ message: string; data: any[] }> {
+  async getTenementsByUserId(userId: number,isDelete:boolean): Promise<{ message: string; data: any[] }> {
     const tenements = await this.prisma.tenement.findMany({
       where: { owner: userId, is_deleted: false },
     });
@@ -98,12 +110,23 @@ export class TenementService {
           const tenementCreate = await this.prisma.tenement_Create.findUnique({
             where: { tenement_id: cur.id },
           });
+          const tenementRent = await this.prisma.tenement_Rent.findUnique({
+            where: { tenement_id: cur.id, is_deleted: isDelete},
+          });
+
+          const tenementSell = await this.prisma.tenement_Sell.findUnique({
+            where: { tenement_id: cur.id, is_deleted: isDelete },
+          });
+          const tenementDevelop = await this.prisma.tenement_Develop.findUnique({
+            where: { tenement_id: cur.id, is_deleted: isDelete },
+          });
+    
   
           const marketTenement = await this.prisma.tenement_Market.findUnique({
             where: { tenement_id: cur.id },
           });
-  
-          if (!tenementCreate && !marketTenement) return null;
+
+          if (!tenementCreate && !tenementRent && !tenementDevelop && !tenementSell) return null;
   
           // 假设从tenementCreate或marketTenement获取floor信息
           // 注意: 根据你的数据库模型调整这里的逻辑
@@ -158,21 +181,21 @@ export class TenementService {
             },
           },
         },
+        where: { // 加入`is_deleted`的判断
+          is_deleted: false,
+        },
       };
-
+      
       if (!isadmin) {
-        queryOptions['where'] = {
-          Tenement_Create: {
-            Tenement: {
-              owner: userId,
-              is_deleted: false,
-            },
+        // 非管理员用户还需要确保他们只能看到自己的记录
+        queryOptions['where']['Tenement_Create'] = {
+          Tenement: {
+            owner: userId,
           },
         };
       }
-
-      const tenementSells =
-        await this.prisma.tenement_Sell.findMany(queryOptions);
+      
+      const tenementSells = await this.prisma.tenement_Sell.findMany(queryOptions);
 
       const data = tenementSells.map((sell) => ({
         tenement_id: sell.tenement_id,
@@ -212,21 +235,21 @@ export class TenementService {
             },
           },
         },
+        where: { // 加入`is_deleted`的判断
+          is_deleted: false,
+        },
       };
-
+      
       if (!isadmin) {
-        queryOptions['where'] = {
-          Tenement_Create: {
-            Tenement: {
-              owner: userId,
-              is_deleted: false,
-            },
+        // 非管理员用户还需要确保他们只能看到自己的记录
+        queryOptions['where']['Tenement_Create'] = {
+          Tenement: {
+            owner: userId,
           },
         };
       }
 
-      const tenementRents =
-        await this.prisma.tenement_Rent.findMany(queryOptions);
+      const tenementRents =await this.prisma.tenement_Rent.findMany(queryOptions);
 
       const data = tenementRents.map((rent) => ({
         tenement_id: rent.tenement_id,
@@ -1368,7 +1391,7 @@ export class TenementService {
     return { message: 'Tenement market successfully updated' };
   }
 
-  async getFilteredTenements(query): Promise<{ message: string; data: any }> {
+  async getFilteredTenements(query,isDelete:boolean): Promise<{ message: string; data: any }> {
     const {
       tenement_address,
       tenement_product_type,
@@ -1440,7 +1463,7 @@ export class TenementService {
         whereClauseCreate.tenement_floor = { ...whereClauseCreate.tenement_floor, lte: parseInt(floor_max) };
       }
     }
-    // Tenement_Market 表的條件
+
     if (rent_price_min !== undefined || rent_price_max !== undefined) {
       whereClauseMarketCreate.AND = whereClauseMarketCreate.AND || []; // 确保 AND 子句存在
     
@@ -1465,6 +1488,8 @@ export class TenementService {
         whereClauseMarketCreate.AND.push({ hopefloor_min: { lte: parseInt(floor_max) } });
       }
     }
+        whereClauseMarketCreate.AND.push({ is_deleted: isDelete });
+
 
     const tenementMarketResults = await this.prisma.tenement_Market.findMany({
       where: whereClauseMarketCreate, // 使用更新后的条件
@@ -1552,6 +1577,7 @@ return {
   async getFilteredTenementsForUser(
     query,
     userId: number,
+    isDelete:boolean
   ): Promise<{message: string,data:any}> {
     const {
       tenement_address,
@@ -1652,6 +1678,7 @@ return {
         whereClauseMarketCreate.AND.push({ hopefloor_min: { lte: parseInt(floor_max) } });
       }
     }
+        whereClauseMarketCreate.AND.push({ is_deleted: isDelete });
     
     const tenementMarketResults = await this.prisma.tenement_Market.findMany({
       where: whereClauseMarketCreate, // 使用更新后的条件

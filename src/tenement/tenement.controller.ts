@@ -53,23 +53,47 @@ export class TenementController {
     const hasQueryParams = Object.keys(query).length > 0;
     if (hasQueryParams) {
       if (userisadmin === true) {
-        return this.tenementService.getFilteredTenements(query);
+        return this.tenementService.getFilteredTenements(query,false);
       } else {
         return this.tenementService.getFilteredTenementsForUser(
           query,
           req.user.userId,
+          false
         );
       }
     } else {
       if (userisadmin === true) {
-        return this.tenementService.getAllTenements();
+        return this.tenementService.getAllTenements(false);
         
       } else {
        
-        return this.tenementService.getTenementsByUserId(req.user.userId);
+        return this.tenementService.getTenementsByUserId(req.user.userId,false);
         
       }
     }
+  }
+
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  @ApiBearerAuth()
+  @Get('rollback')
+  @ApiOperation({ summary: 'Get all or filtered tenements' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved tenements.',
+  })
+  @ApiResponse({ status: 404, description: 'Tenement not found' })
+  async getAllRollBackTenements(@Request() req){
+    const userisadmin = req.user.isadmin;
+    
+      if (userisadmin === true) {
+        return this.tenementService.getAllTenements(true);
+        
+      } else {
+       
+        return this.tenementService.getTenementsByUserId(req.user.userId,true);
+        
+      }
+    
   }
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
