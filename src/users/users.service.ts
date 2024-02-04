@@ -127,10 +127,10 @@ export class UsersService {
   }
 
   async getUsers(isDeleted: boolean): Promise<GetUserListDto[]> {
-    console.log('isDeleted', isDeleted);
     return this.prisma.user.findMany({
       where: {
         isDeleted: isDeleted,
+        is_true_deleted: false,
       },
       select: {
         user_id: true,
@@ -146,6 +146,7 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({
       where: {
         user_id: userId,
+        is_true_deleted: false,
       },
       select: {
         user_id: true,
