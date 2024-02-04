@@ -1,5 +1,7 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -169,9 +171,6 @@ export class TenementService {
     };
   }
   
-  
-  
-
   async getAllTenementSells(isadmin: boolean, userId: number): Promise<{ message: string; data: any[] }> {
     try {
       const queryOptions = {
@@ -223,7 +222,6 @@ export class TenementService {
       );
     }
   }
-  
 
   async getAllTenementRents(isadmin: boolean, userId: number): Promise<{ message: string; data: any[] }> {
     try {
@@ -997,6 +995,7 @@ export class TenementService {
     return { message: 'Successfully processed the tenement development', data: { tenement_id: tenement.id } };
   }
   
+
   async createTenementMarket(createTenementMarketDto: CreateTenementMarketDto, userId: number) {
     const tenementId = createTenementMarketDto.tenement_id;
     let tenement;
@@ -1084,9 +1083,9 @@ export class TenementService {
   }
 
   async deleteTenementRent(tenementId: number): Promise<{ message: string }> {
-    await this.prisma.tenement.updateMany({
+    await this.prisma.tenement_Rent.updateMany({
       where: {
-        id: tenementId,
+        tenement_id: tenementId,
         is_deleted: false,
       },
       data: {
@@ -1100,9 +1099,9 @@ export class TenementService {
   async deleteTenementDevelop(
     tenementId: number,
   ): Promise<{ message: string }> {
-    await this.prisma.tenement.updateMany({
+    await this.prisma.tenement_Develop.updateMany({
       where: {
-        id: tenementId,
+        tenement_id: tenementId,
         is_deleted: false,
       },
       data: {
@@ -1114,9 +1113,9 @@ export class TenementService {
   }
 
   async deleteTenementMarket(tenementId: number): Promise<{ message: string }> {
-    await this.prisma.tenement.updateMany({
+    await this.prisma.tenement_Market.updateMany({
       where: {
-        id: tenementId,
+        tenement_id: tenementId,
         is_deleted: false,
       },
       data: {
@@ -1128,10 +1127,10 @@ export class TenementService {
   }
 
   async deleteTenementSell(tenementId: number): Promise<{ message: string }> {
-    await this.prisma.tenement.updateMany({
+    await this.prisma.tenement_Sell.updateMany({
       where: {
-        id: tenementId,
-        is_deleted: false,
+        tenement_id: tenementId,
+        is_deleted: false, // 只更新未被删除的记录
       },
       data: {
         is_deleted: true,
@@ -1139,29 +1138,6 @@ export class TenementService {
     });
 
     return { message: 'Tenement sell successfully deleted' };
-  }
-
-  async rollbackDeleteTenement(tenementId: number, tenementType: string): Promise<any> {
-    switch (tenementType) {
-      case 'Create':
-        // 实现撤销删除逻辑
-        break;
-      case 'Rent':
-        // 实现撤销删除逻辑
-        break;
-      case 'Sell':
-        // 实现撤销删除逻辑
-        break;
-      case 'Develop':
-        // 实现撤销删除逻辑
-        break;
-      case 'Market':
-        // 实现撤销删除逻辑
-        break;
-      default:
-        throw new BadRequestException('Invalid tenement type');
-    }
-    // 返回操作结果
   }
 
   async updateTenementSell(
@@ -2147,5 +2123,57 @@ try {
   throw new Error('Unable to fetch tenement rents due to an error: ' + error.message);
 }
 
+}
+
+async rollbackDeleteTenement(tenementId: number, tenementType: string): Promise<{ message: string }> {
+  switch (tenementType) {
+    case 'Rent':
+      await this.prisma.tenement_Rent.updateMany({
+        where: {
+          tenement_id: tenementId,
+          is_true_deleted: true,
+        },
+        data: {
+          is_true_deleted : false,
+        },
+      });
+      break;
+    case 'Sell':
+      await this.prisma.tenement_Sell.updateMany({
+        where: {
+          tenement_id: tenementId,
+          is_true_deleted: true,
+        },
+        data: {
+          is_true_deleted: false,
+        },
+      });
+      break;
+    case 'Develop':
+      await this.prisma.tenement_Develop.updateMany({
+        where: {
+          tenement_id: tenementId,
+          is_true_deleted: true,
+        },
+        data: {
+          is_true_deleted: false,
+        },
+      });
+      break;
+    case 'Market':
+      await this.prisma.tenement_Market.updateMany({
+        where: {
+          tenement_id: tenementId,
+          is_true_deleted: true,
+        },
+        data: {
+          is_true_deleted: false,
+        },
+      });
+      break;
+    default:
+      throw new BadRequestException('Invalid tenement type');
+  }
+  return { message: `Tenement ${tenementType} rollback deletion successful` };
 }
 }

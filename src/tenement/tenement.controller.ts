@@ -101,7 +101,6 @@ export class TenementController {
     @Param('tenementType') tenementType: string,
     @Request() req,
   ): Promise<any> {
-    // 确保只有管理员可以执行回滚操作
     if (!req.user.isadmin) {
       throw new ForbiddenException(
         'You do not have permission to perform this action',
