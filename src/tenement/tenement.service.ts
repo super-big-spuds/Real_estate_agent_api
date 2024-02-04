@@ -60,6 +60,8 @@ export class TenementService {
             tenement_status: cur.tenement_status,
             tenement_type: "出售", // 标识这是一个"Rent"条目
             tenement_product_type: cur.tenement_product_type,
+            management_fee_bottom: tenementCreate ? tenementCreate.management_fee : marketTenement ? marketTenement.burget_rent_min : null,
+          management_floor_bottom: tenementCreate ? tenementCreate.tenement_floor : marketTenement ? marketTenement.hopefloor_min : null,
           });
         });
         tenementSell.forEach(sell => {
@@ -70,6 +72,8 @@ export class TenementService {
             tenement_status: cur.tenement_status,
             tenement_type: "出租", // 标识这是一个"Sell"条目
             tenement_product_type: cur.tenement_product_type,
+            management_fee_bottom: tenementCreate ? tenementCreate.management_fee : marketTenement ? marketTenement.burget_rent_min : null,
+          management_floor_bottom: tenementCreate ? tenementCreate.tenement_floor : marketTenement ? marketTenement.hopefloor_min : null,
           });
         });
         tenementDevelop.forEach(develop => {
@@ -80,6 +84,8 @@ export class TenementService {
             tenement_status: cur.tenement_status,
             tenement_type: "開發追蹤", // 标识这是一个"Develop"条目
             tenement_product_type: cur.tenement_product_type,
+            management_fee_bottom: tenementCreate ? tenementCreate.management_fee : marketTenement ? marketTenement.burget_rent_min : null,
+          management_floor_bottom: tenementCreate ? tenementCreate.tenement_floor : marketTenement ? marketTenement.hopefloor_min : null,
           });
         });
       }
@@ -94,6 +100,8 @@ export class TenementService {
             tenement_status: cur.tenement_status,
             tenement_type: "行銷追蹤", // 标识这是一个"Market"条目
             tenement_product_type: cur.tenement_product_type,
+            management_fee_bottom: tenementCreate ? tenementCreate.management_fee : marketTenement ? marketTenement.burget_rent_min : null,
+          management_floor_bottom: tenementCreate ? tenementCreate.tenement_floor : marketTenement ? marketTenement.hopefloor_min : null,
           });
         }
       }
@@ -259,7 +267,7 @@ export class TenementService {
         management_fee_bottom: rent.Tenement_Create.management_fee,
         management_floor_bottom: rent.Tenement_Create.tenement_floor,
         rent_price: rent.Tenement_Create.rent_price, // 使用正确的属性名
-        total_rating: rent.Tenement_Create.total_rating,
+        Total_rating: rent.Tenement_Create.total_rating,
         inside_rating: rent.Tenement_Create.inside_rating,
         public_building: rent.Tenement_Create.public_building,
         tenement_floor: rent.Tenement_Create.tenement_floor,
