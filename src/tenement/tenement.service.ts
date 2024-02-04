@@ -2128,7 +2128,7 @@ async rollbackDeleteTenement(tenementId: number, tenementType: string): Promise<
   const type = tenementType.toLowerCase();
   switch (type) {
     
-    case 'Rent':
+    case 'rent':
       await this.prisma.tenement_Rent.updateMany({
         where: {
           tenement_id: tenementId,
@@ -2139,7 +2139,7 @@ async rollbackDeleteTenement(tenementId: number, tenementType: string): Promise<
         },
       });
       break;
-    case 'Sell':
+    case 'sell':
       await this.prisma.tenement_Sell.updateMany({
         where: {
           tenement_id: tenementId,
@@ -2150,7 +2150,7 @@ async rollbackDeleteTenement(tenementId: number, tenementType: string): Promise<
         },
       });
       break;
-    case 'Develop':
+    case 'develop':
       await this.prisma.tenement_Develop.updateMany({
         where: {
           tenement_id: tenementId,
@@ -2161,7 +2161,7 @@ async rollbackDeleteTenement(tenementId: number, tenementType: string): Promise<
         },
       });
       break;
-    case 'Market':
+    case 'market':
       await this.prisma.tenement_Market.updateMany({
         where: {
           tenement_id: tenementId,
