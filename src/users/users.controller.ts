@@ -132,7 +132,25 @@ export class UsersController {
     const userisAdmin = req.user.isadmin;
 
     if (userisAdmin === true) {
-      return this.usersService.getUsers();
+      return this.usersService.getUsers(false);
+    } else {
+      throw new ForbiddenException('Access Denied');
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  @ApiBearerAuth()
+  @Get('Roll Back')
+  @ApiOperation({ summary: 'Get user Roll Back list' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved Roll Back user data',
+  })
+  async getRollBackUsers(@Request() req) {
+    const userisAdmin = req.user.isadmin;
+
+    if (userisAdmin === true) {
+      return this.usersService.getUsers(true);
     } else {
       throw new ForbiddenException('Access Denied');
     }

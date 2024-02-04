@@ -116,15 +116,19 @@ export class UsersService {
     });
   }
 
-  async getUsers(): Promise<GetUserListDto[]> {
+  async getUsers(isDeleted: boolean): Promise<GetUserListDto[]> {
     return this.prisma.user.findMany({
+      where: {
+        // 只选取未被标记为删除的用户
+        isDeleted: false,
+      },
       select: {
         user_id: true,
         user_name: true,
         user_email: true,
         status: true,
         isadmin: true,
-        isDeleted: true,
+        isDeleted: isDeleted,
       },
     });
   }
