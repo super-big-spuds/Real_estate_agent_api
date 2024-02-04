@@ -140,7 +140,7 @@ export class UsersController {
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   @ApiBearerAuth()
-  @Get('Roll Back')
+  @Get('rollback/list')
   @ApiOperation({ summary: 'Get user Roll Back list' })
   @ApiResponse({
     status: 200,
