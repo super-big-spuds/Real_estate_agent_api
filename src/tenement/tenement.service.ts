@@ -25,7 +25,7 @@ export class TenementService {
 
   async getAllTenements(isDeleted: boolean): Promise<{ message: string; data: any[] }> {
     const tenements = await this.prisma.tenement.findMany({
-      where: { is_deleted: isDeleted },
+      
     });
   
     const resultData = [];
@@ -82,8 +82,7 @@ export class TenementService {
             tenement_product_type: cur.tenement_product_type,
           });
         });
-      } else {
-        // 如果没有Tenement Create数据，尝试获取Tenement Market数据
+      }
         const marketTenement = await this.prisma.tenement_Market.findUnique({
           where: { tenement_id: cur.id,is_deleted: isDeleted  },
         });
@@ -98,7 +97,7 @@ export class TenementService {
           });
         }
       }
-    }
+    
   
     return {
       message: 'Successfully get the tenements',

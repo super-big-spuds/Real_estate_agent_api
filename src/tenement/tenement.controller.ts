@@ -94,7 +94,7 @@ export class TenementController {
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   @ApiBearerAuth()
-  @Post('/rollback/:tenementId/:tenementType')
+  @Delete('/rollback/:tenementId/:tenementType')
   @ApiOperation({ summary: 'Rollback deletion of a specific tenement type' })
   async rollbackDeleteTenement(
     @Param('tenementId', ParseIntPipe) tenementId: number,
