@@ -126,6 +126,7 @@ export class CreateTenementDevelopDto {
   @ApiProperty({ example: 'Occupied', description: 'Tenement status' })
   tenement_status: string;
 
+  @Transform(({ value }) => Number(value))
   @ApiProperty({ example: 15, description: 'Tenement ID' })
   tenement_id: number;
 }
