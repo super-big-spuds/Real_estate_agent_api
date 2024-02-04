@@ -127,7 +127,7 @@ export class CollectionController {
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   @ApiBearerAuth()
-  @Delete(':id')
+  @Delete('rollback/:id')
   @ApiOperation({ summary: 'Delete a collection' })
   @ApiParam({ name: 'id', description: 'Collection ID' })
   async deleteTrueCollection(@Param('id', ParseIntPipe) id: number) {

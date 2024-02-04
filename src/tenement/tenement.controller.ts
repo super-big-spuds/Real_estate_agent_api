@@ -82,14 +82,8 @@ export class TenementController {
     description: 'Successfully retrieved tenements.',
   })
   @ApiResponse({ status: 404, description: 'Tenement not found' })
-  async getAllRollBackTenements(@Request() req) {
-    const userisadmin = req.user.isadmin;
-
-    if (userisadmin === true) {
-      return this.tenementService.getAllTenements(true);
-    } else {
-      return this.tenementService.getTenementsByUserId(req.user.userId, true);
-    }
+  async getAllRollBackTenements() {
+    return this.tenementService.getAllTenements(true);
   }
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
@@ -302,7 +296,7 @@ export class TenementController {
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   @ApiBearerAuth()
-  @Delete('/rollback/:tenementId/:tenementType')
+  @Delete('/delete/rollback/:tenementType/:tenementId')
   @ApiOperation({ summary: 'Rollback deletion of a specific tenement type' })
   async rollbackDeleteTenement(
     @Param('tenementId', ParseIntPipe) tenementId: number,

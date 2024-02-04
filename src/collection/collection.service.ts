@@ -100,6 +100,7 @@ export class CollectionService {
       const collections = await this.prisma.collection.findMany({
         where: {
           is_deleted: isDeleted, // 使用 isDeleted 参数动态过滤数据
+          is_true_deleted: false,
         },
       });
       const data = collections.map((collection) => ({
@@ -126,6 +127,7 @@ export class CollectionService {
         where: {
           owner: userId,
           is_deleted: isDeleted,
+          is_true_deleted: false,
         },
       });
       const data = collections.map((collection) => ({
@@ -167,7 +169,10 @@ export class CollectionService {
     try {
       await this.prisma.collection.update({
         where: { id },
-        data: collectionData,
+        data: {
+          ...collectionData,
+          is_deleted: false,
+        },
       });
       return { message: 'Successfully update the media' };
     } catch (error) {

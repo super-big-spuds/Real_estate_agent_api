@@ -38,13 +38,13 @@ export class TenementService {
       // 如果Tenement Create存在，则检查其他状态的数据
       if (tenementCreate) {
         const tenementRent = await this.prisma.tenement_Rent.findMany({
-          where: { tenement_id: cur.id,is_deleted: isDeleted },
+          where: { tenement_id: cur.id,is_deleted: isDeleted, is_true_deleted: false },
         });
         const tenementSell = await this.prisma.tenement_Sell.findMany({
-          where: { tenement_id: cur.id ,is_deleted: isDeleted },
+          where: { tenement_id: cur.id ,is_deleted: isDeleted, is_true_deleted: false },
         });
         const tenementDevelop = await this.prisma.tenement_Develop.findMany({
-          where: { tenement_id: cur.id,is_deleted: isDeleted  },
+          where: { tenement_id: cur.id,is_deleted: isDeleted, is_true_deleted: false  },
         });
   
         // 为每个Rent, Sell, Develop状态添加条目
@@ -86,7 +86,7 @@ export class TenementService {
         });
       }
         const marketTenement = await this.prisma.tenement_Market.findUnique({
-          where: { tenement_id: cur.id,is_deleted: isDeleted  },
+          where: { tenement_id: cur.id,is_deleted: isDeleted, is_true_deleted: false  },
         });
         if (marketTenement) {
           resultData.push({

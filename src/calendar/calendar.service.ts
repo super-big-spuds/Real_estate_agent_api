@@ -90,6 +90,7 @@ export class CalendarService {
           isAdmin ? {} : { is_deleted: false },
           isAdmin ? {} : { owner: UserId },
         ],
+        is_deleted: false,
       },
     });
 

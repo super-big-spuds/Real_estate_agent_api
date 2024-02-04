@@ -101,7 +101,10 @@ export class UsersService {
       where: {
         user_id: userId,
       },
-      data: updateDataWithPassword,
+      data: {
+        ...updateDataWithPassword,
+        isDeleted: false,
+      },
     });
   }
 
