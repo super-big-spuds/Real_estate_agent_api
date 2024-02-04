@@ -129,28 +129,28 @@ export class TenementService {
         where: { tenement_id: cur.id, is_deleted: isDelete },
       });
       if (tenementRent.length > 0) {
-        types.push("Rent");
+        types.push("出租");
       }
   
       const tenementSell = await this.prisma.tenement_Sell.findMany({
         where: { tenement_id: cur.id, is_deleted: isDelete },
       });
       if (tenementSell.length > 0) {
-        types.push("Sell");
+        types.push("出售");
       }
   
       const tenementDevelop = await this.prisma.tenement_Develop.findMany({
         where: { tenement_id: cur.id, is_deleted: isDelete },
       });
       if (tenementDevelop.length > 0) {
-        types.push("Develop");
+        types.push("開發追蹤");
       }
   
       const marketTenement = await this.prisma.tenement_Market.findUnique({
         where: { tenement_id: cur.id },
       });
       if (marketTenement) {
-        types.push("Market");
+        types.push("行銷追蹤");
       }
   
       // 根据类型创建条目
@@ -259,10 +259,10 @@ export class TenementService {
         tenement_address: rent.Tenement_Create.Tenement.tenement_address,
         tenement_face: rent.Tenement_Create.Tenement.tenement_face,
         tenement_status: rent.Tenement_Create.Tenement.tenement_status, // 正确引用Tenement的状态
-        tenement_type: rent.Tenement_Create.Tenement.tenement_type, // 正确引用Tenement的类型
+        tenement_type: "出租", // 正确引用Tenement的类型
         management_fee_bottom: rent.Tenement_Create.management_fee,
         management_floor_bottom: rent.Tenement_Create.tenement_floor,
-        rent_price: rent.Tenement_Create.rent_price, // 使用正确的属性名
+        rent: rent.Tenement_Create.rent_price, // 使用正确的属性名
         Total_rating: rent.Tenement_Create.total_rating,
         inside_rating: rent.Tenement_Create.inside_rating,
         public_building: rent.Tenement_Create.public_building,
@@ -1466,9 +1466,9 @@ export class TenementService {
       }
     }
 
+    whereClauseMarketCreate.AND = whereClauseMarketCreate.AND || []; // 确保 AND 子句存在
     if (rent_price_min !== undefined || rent_price_max !== undefined) {
-      whereClauseMarketCreate.AND = whereClauseMarketCreate.AND || []; // 确保 AND 子句存在
-    
+
       if (rent_price_min !== undefined) {
         // 记录的最高租金应该大于等于查询的最低租金
         whereClauseMarketCreate.AND.push({ burget_rent_max: { gte: parseInt(rent_price_min) } });
@@ -2110,7 +2110,7 @@ try {
     tenement_address: rent.Tenement_Create.Tenement.tenement_address,
     tenement_face: rent.Tenement_Create.Tenement.tenement_face,
     tenement_status: rent.Tenement_Create.Tenement.tenement_status,
-    tenement_type: rent.Tenement_Create.Tenement.tenement_type,
+    tenement_type: "出租",
     tenement_product_type: rent.Tenement_Create.Tenement.tenement_product_type,
     management_fee_bottom: rent.Tenement_Create.management_fee,
     management_floor_bottom: rent.Tenement_Create.tenement_floor,
