@@ -25,7 +25,6 @@ export class TenementService {
 
   async getAllTenements(isDeleted: boolean): Promise<{ message: string; data: any[] }> {
     const tenements = await this.prisma.tenement.findMany({
-      
     });
   
     const resultData = [];
@@ -48,9 +47,6 @@ export class TenementService {
           where: { tenement_id: cur.id,is_deleted: isDeleted  },
         });
   
-        // 为Tenement Create添加一个条目
-
-  
         // 为每个Rent, Sell, Develop状态添加条目
         tenementRent.forEach(rent => {
           resultData.push({
@@ -58,7 +54,7 @@ export class TenementService {
             tenement_address: cur.tenement_address,
             tenement_face: cur.tenement_face ?? '',
             tenement_status: cur.tenement_status,
-            tenement_type: "出售", // 标识这是一个"Rent"条目
+            tenement_type: "出租", // 标识这是一个"Rent"条目
             tenement_product_type: cur.tenement_product_type,
             management_fee_bottom: tenementCreate ? tenementCreate.management_fee : marketTenement ? marketTenement.burget_rent_min : null,
           management_floor_bottom: tenementCreate ? tenementCreate.tenement_floor : marketTenement ? marketTenement.hopefloor_min : null,
@@ -70,7 +66,7 @@ export class TenementService {
             tenement_address: cur.tenement_address,
             tenement_face: cur.tenement_face ?? '',
             tenement_status: cur.tenement_status,
-            tenement_type: "出租", // 标识这是一个"Sell"条目
+            tenement_type: "出售", // 标识这是一个"Sell"条目
             tenement_product_type: cur.tenement_product_type,
             management_fee_bottom: tenementCreate ? tenementCreate.management_fee : marketTenement ? marketTenement.burget_rent_min : null,
           management_floor_bottom: tenementCreate ? tenementCreate.tenement_floor : marketTenement ? marketTenement.hopefloor_min : null,
