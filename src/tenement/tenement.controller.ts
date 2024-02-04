@@ -94,27 +94,6 @@ export class TenementController {
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   @ApiBearerAuth()
-  @Delete('/rollback/:tenementId/:tenementType')
-  @ApiOperation({ summary: 'Rollback deletion of a specific tenement type' })
-  async rollbackDeleteTenement(
-    @Param('tenementId', ParseIntPipe) tenementId: number,
-    @Param('tenementType') tenementType: string,
-    @Request() req,
-  ): Promise<any> {
-    if (!req.user.isadmin) {
-      throw new ForbiddenException(
-        'You do not have permission to perform this action',
-      );
-    }
-
-    return this.tenementService.rollbackDeleteTenement(
-      tenementId,
-      tenementType,
-    );
-  }
-
-  @UseGuards(AuthGuard('jwt'), AdminGuard)
-  @ApiBearerAuth()
   @Get('/sell')
   @ApiOperation({ summary: 'Get all tenement sells' })
   async getAllTenementSells(@Request() req, @Query() query: TenementQueryDto) {
@@ -319,6 +298,27 @@ export class TenementController {
     @Param('tenementId', ParseIntPipe) tenementId: number,
   ) {
     return this.tenementService.deleteTenementRent(tenementId);
+  }
+
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  @ApiBearerAuth()
+  @Delete('/rollback/:tenementId/:tenementType')
+  @ApiOperation({ summary: 'Rollback deletion of a specific tenement type' })
+  async rollbackDeleteTenement(
+    @Param('tenementId', ParseIntPipe) tenementId: number,
+    @Param('tenementType') tenementType: string,
+    @Request() req,
+  ): Promise<any> {
+    if (!req.user.isadmin) {
+      throw new ForbiddenException(
+        'You do not have permission to perform this action',
+      );
+    }
+
+    return this.tenementService.rollbackDeleteTenement(
+      tenementId,
+      tenementType,
+    );
   }
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
