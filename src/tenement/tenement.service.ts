@@ -2131,10 +2131,10 @@ async rollbackDeleteTenement(tenementId: number, tenementType: string): Promise<
       await this.prisma.tenement_Rent.updateMany({
         where: {
           tenement_id: tenementId,
-          is_true_deleted: true,
+          is_true_deleted: false,
         },
         data: {
-          is_true_deleted : false,
+          is_true_deleted : true,
         },
       });
       break;
@@ -2142,10 +2142,10 @@ async rollbackDeleteTenement(tenementId: number, tenementType: string): Promise<
       await this.prisma.tenement_Sell.updateMany({
         where: {
           tenement_id: tenementId,
-          is_true_deleted: true,
+          is_true_deleted: false,
         },
         data: {
-          is_true_deleted: false,
+          is_true_deleted: true,
         },
       });
       break;
@@ -2153,10 +2153,10 @@ async rollbackDeleteTenement(tenementId: number, tenementType: string): Promise<
       await this.prisma.tenement_Develop.updateMany({
         where: {
           tenement_id: tenementId,
-          is_true_deleted: true,
+          is_true_deleted: false,
         },
         data: {
-          is_true_deleted: false,
+          is_true_deleted: true,
         },
       });
       break;
@@ -2164,10 +2164,10 @@ async rollbackDeleteTenement(tenementId: number, tenementType: string): Promise<
       await this.prisma.tenement_Market.updateMany({
         where: {
           tenement_id: tenementId,
-          is_true_deleted: true,
+          is_true_deleted: false,
         },
         data: {
-          is_true_deleted: false,
+          is_true_deleted: true,
         },
       });
       break;
