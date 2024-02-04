@@ -283,7 +283,7 @@ export class TenementService {
     isAdmin: boolean,
   ): Promise<{ message: string; data: any }> {
     const tenementSell = await this.prisma.tenement_Sell.findUnique({
-      where: { tenement_id: tenementId, is_deleted: false },
+      where: { tenement_id: tenementId },
       include: { Tenement_Create: { include: { Tenement: true } } },
     });
 
