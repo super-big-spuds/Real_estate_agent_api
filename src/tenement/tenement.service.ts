@@ -2125,7 +2125,9 @@ try {
 }
 
 async rollbackDeleteTenement(tenementId: number, tenementType: string): Promise<{ message: string }> {
-  switch (tenementType) {
+  const type = tenementType.toLowerCase();
+  switch (type) {
+    
     case 'Rent':
       await this.prisma.tenement_Rent.updateMany({
         where: {
