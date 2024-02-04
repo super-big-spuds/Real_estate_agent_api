@@ -124,4 +124,13 @@ export class CollectionController {
   async deleteCollection(@Param('id', ParseIntPipe) id: number) {
     return this.collectionService.deleteCollection(id);
   }
+
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  @ApiBearerAuth()
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a collection' })
+  @ApiParam({ name: 'id', description: 'Collection ID' })
+  async deleteTrueCollection(@Param('id', ParseIntPipe) id: number) {
+    return this.collectionService.deleteTrueCollection(id);
+  }
 }

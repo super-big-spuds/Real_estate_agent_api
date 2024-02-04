@@ -196,4 +196,18 @@ export class CollectionService {
       );
     }
   }
+
+  async deleteTrueCollection(id: number): Promise<{ message: string }> {
+    try {
+      await this.prisma.collection.update({
+        where: { id },
+        data: { is_true_deleted: true },
+      });
+      return { message: 'Successfully delete the  media' };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'An error occurred while deleting the collection.',
+      );
+    }
+  }
 }

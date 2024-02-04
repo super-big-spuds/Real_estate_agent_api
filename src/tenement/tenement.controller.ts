@@ -96,6 +96,8 @@ export class TenementController {
     
   }
 
+  
+
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   @ApiBearerAuth()
   @Get('/sell')
@@ -302,6 +304,7 @@ export class TenementController {
   ) {
     return this.tenementService.deleteTenementRent(tenementId);
   }
+  
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Post('/edit/sell/:tenementId')

@@ -997,7 +997,6 @@ export class TenementService {
     return { message: 'Successfully processed the tenement development', data: { tenement_id: tenement.id } };
   }
   
-
   async createTenementMarket(createTenementMarketDto: CreateTenementMarketDto, userId: number) {
     const tenementId = createTenementMarketDto.tenement_id;
     let tenement;
