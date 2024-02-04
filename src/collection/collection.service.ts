@@ -91,12 +91,17 @@ export class CollectionService {
     };
   }
 
-  async getAllCollections(): Promise<{
+  async getAllCollections(isDeleted: boolean): Promise<{
     message: string;
     data: CollectionDto[];
   }> {
+    console.log('isDeleted', isDeleted);
     try {
-      const collections = await this.prisma.collection.findMany();
+      const collections = await this.prisma.collection.findMany({
+        where: {
+          is_deleted: isDeleted, // 使用 isDeleted 参数动态过滤数据
+        },
+      });
       const data = collections.map((collection) => ({
         collection_name: collection.collection_name,
         tenement_address: collection.tenement_no,
@@ -114,12 +119,13 @@ export class CollectionService {
 
   async getCollectionsByUserId(
     userId: number,
+    isDeleted: boolean,
   ): Promise<{ message: string; data: CollectionDto[] }> {
     try {
       const collections = await this.prisma.collection.findMany({
         where: {
           owner: userId,
-          is_deleted: false,
+          is_deleted: isDeleted,
         },
       });
       const data = collections.map((collection) => ({
