@@ -1391,8 +1391,7 @@ export class TenementService {
   }
 
   async getFilteredTenements(query,isDelete:boolean): Promise<{ message: string; data: any }> {
-    const types = query.tenement_type ? query.tenement_type.split(',') : [];
-
+    const types = query.tenement_type ? query.tenement_type.split(',') : []; 
     
     if (types.length === 0) {
       types.push('出租', '出售', '開發追蹤', '行銷追蹤');
@@ -1402,7 +1401,6 @@ export class TenementService {
     const includeRelations = {
       Tenement_Create: {
         include: {
-          // 根据 types 动态包含关联数据
           Tenement_Rent: types.includes('出租'),
           Tenement_Sell: types.includes('出售'),
           Tenement_Develop: types.includes('開發追蹤'),
@@ -1410,20 +1408,64 @@ export class TenementService {
       },
 
     };
-
-
     const whereConditions: any = {
       ...(query.tenement_address && { tenement_address: { contains: query.tenement_address } }),
-      ...(query.tenement_product_type && { tenement_product_type: query.tenement_product_type }),
-      ...(query.tenement_face && { tenement_face: query.tenement_face }),
-      ...(query.tenement_status && { tenement_status: query.tenement_status }),
     };
+    
+    if (query.tenement_product_type) {
+      const productTypes = query.tenement_product_type.split(',');
+      if (productTypes.length) {
+        whereConditions.OR = productTypes.map(type => ({ tenement_product_type: type }));
+      }
+    }
+    
+    if (query.tenement_face) {
+      const faces = query.tenement_face.split(',');
+      if (faces.length) {
+        whereConditions.OR = [
+          ...(whereConditions.OR || []),
+          ...faces.map(face => ({ tenement_face: face })),
+        ];
+      }
+    }
+    
+    if (query.tenement_status) {
+      const statuses = query.tenement_status.split(',');
+      if (statuses.length) {
+        whereConditions.OR = [
+          ...(whereConditions.OR || []),
+          ...statuses.map(status => ({ tenement_status: status })),
+        ];
+      }
+    }
     const whereMarketConditions: any = {
       ...(query.tenement_address && { tenement_address: { contains: query.tenement_address } }),
-      ...(query.tenement_product_type && { tenement_product_type: query.tenement_product_type }),
-      ...(query.tenement_face && { tenement_face: query.tenement_face }),
-      ...(query.tenement_status && { tenement_status: query.tenement_status }),
     };
+    
+    // 处理可能有多个值的条件
+    const orConditions = [];
+    
+    if (query.tenement_product_type) {
+      const productTypes = query.tenement_product_type.split(',');
+      orConditions.push(...productTypes.map(type => ({ tenement_product_type: type })));
+    }
+    
+    if (query.tenement_face) {
+      const faces = query.tenement_face.split(',');
+      orConditions.push(...faces.map(face => ({ tenement_face: face })));
+    }
+    
+    if (query.tenement_status) {
+      const statuses = query.tenement_status.split(',');
+      orConditions.push(...statuses.map(status => ({ tenement_status: status })));
+    }
+    
+    // 只有当有需要处理的OR条件时，才添加到whereMarketConditions
+    if (orConditions.length > 0) {
+      whereMarketConditions.OR = orConditions;
+    }
+
+
     if (query.selling_price_min !== undefined || query.selling_price_max !== undefined || query.rent_price_min !== undefined || query.rent_price_max !== undefined ||
       query.floor_min !== undefined || query.floor_max !== undefined) {
       whereConditions.Tenement_Create = {
@@ -1439,88 +1481,107 @@ export class TenementService {
           },
       };
     }
-    if (query.rent_price_min !== undefined || query.rent_price_max !== undefined ||query.floor_min !== undefined || query.floor_max !== undefined) {
 
+    if (query.rent_price_min !== undefined || query.rent_price_max !== undefined ||query.floor_min !== undefined || query.floor_max !== undefined) {
       whereMarketConditions.Tenement_Market = {
         some: {
           AND: [
-              ...(query.rent_price_max !== undefined && !isNaN(parseInt(query.rent_price_max, 10)) ? [{ budget_rent_max: { gte: parseInt(query.rent_price_max, 10) } }] : []),
-              ...(query.rent_price_min !== undefined && !isNaN(parseInt(query.rent_price_min, 10)) ? [{ budget_rent_min: { lte: parseInt(query.rent_price_min, 10) } }] : []),
+              
               ...(query.floor_max !== undefined && !isNaN(parseInt(query.floor_max, 10)) ? [{ hopefloor_min: { lte: parseInt(query.floor_max, 10) } }] : []),
               ...(query.floor_min !== undefined && !isNaN(parseInt(query.floor_min, 10)) ? [{ hopefloor_max: { gte: parseInt(query.floor_min, 10) } }] : []),
           ],
       },
     };
-  
-
-    
     }
    
     const tenements = await this.prisma.tenement.findMany({
-      where: 
-        whereConditions,
-      
+
+      where: whereConditions,
       include: includeRelations,
+
     });
-    
-     // 查询 Tenement_Market 相关的记录
+
   const tenementsWithMarket = await this.prisma.tenement.findMany({
     where: whereMarketConditions,
     include: {
-      Tenement_Create: {
-        include: {
-          Tenement_Rent: types.includes('出租'),
-          Tenement_Sell: types.includes('出售'),
-          Tenement_Develop: types.includes('開發追蹤'),
-        }
-      },
-      
       Tenement_Market: types.includes('行銷追蹤'),
     },
   });
-  const combinedTenements = [...tenements, ...tenementsWithMarket];
-  const uniqueTenementsMap = new Map();
-  combinedTenements.forEach(tenement => uniqueTenementsMap.set(tenement.id, tenement));
-  const uniqueTenements = Array.from(uniqueTenementsMap.values());
-  console.log(uniqueTenements)
-    // 处理 uniqueTenements 以构建最终的响应数据
-    const processedData = uniqueTenements.map(tenement => {
 
-      let tenementType 
-      let managementFeeBottom = 0; // Market 默认为 0
-      let tenementFloor ;
-  
-      // 判断 tenement_type
-      if (tenement.Tenement_Market && tenement.Tenement_Market.length > 0) {
-        tenementType = '行銷追蹤';
-        const market = tenement.Tenement_Market[0];
-        tenementFloor = determineFloorBasedOnMarket(market,query.floor_max,query.floor_min); // 根据市场的逻辑确定楼层
-      } 
-       if (tenement.Tenement_Create && tenement.Tenement_Create.length > 0) {
-        const create = tenement.Tenement_Create[0];
-        tenementType = determineTypeBasedOnCreate(create); // 根据 Create 的数据动态确定类型
-        managementFeeBottom = create.management_fee ?? 0;
-        tenementFloor = create.tenement_floor
-      }
-  
-      return {
-        tenement_id: tenement.id,
-        tenement_address: tenement.tenement_address,
-        tenement_face: tenement.tenement_face ?? 'Not Available',
-        tenement_status: tenement.tenement_status,
-        tenement_type: tenementType,
-        tenement_product_type: tenement.tenement_product_type,
-        management_fee_bottom: managementFeeBottom,
-        tenement_floor: tenementFloor,
-        management_floor_bottom: tenementFloor,
-      };
-    });
-    
-    return {
-      message: "Query successful",
-      data: processedData,
-    };
+    const processedResults = [];
 
+  // 直接在这个循环中处理每个Tenement的Market和Create数据
+  tenements.forEach(tenement => {
+    if (tenement.Tenement_Create && tenement.Tenement_Create.length > 0) {
+      tenement.Tenement_Create.forEach(create => {
+        // 直接处理Create数据
+        const tenementType = determineTypeBasedOnCreate(create);
+        const managementFeeBottom = create.management_fee ?? 0;
+        const tenementFloor = create.tenement_floor;
+        processedResults.push({
+          tenement_id: tenement.id,
+          tenement_address: tenement.tenement_address,
+          tenement_face: tenement.tenement_face ,
+          tenement_status: tenement.tenement_status,
+          tenement_type: tenementType,
+          tenement_product_type: tenement.tenement_product_type,
+          management_fee_bottom: managementFeeBottom,
+          tenement_floor: tenementFloor,
+          management_floor_bottom: tenementFloor,
+        });
+      });
+    }
+  });
+  tenementsWithMarket.forEach(tenement => {
+    if (tenement.Tenement_Market && tenement.Tenement_Market.length > 0) {
+      tenement.Tenement_Market.forEach(market => {
+        // 假设 market.market_state 包含市场状态（如“出售”、“出租”、“可租可售”）
+  
+        // 检查市场状态与查询条件是否匹配
+        let isMatch = false; // 默认不匹配
+
+      
+        if (market.market_state === '要租要買') {
+          // 对于可租可售，需要检查rent和sell的范围
+          console.log(1)
+          isMatch = checkRentAndSellRange(market, query);
+        } else if (market.market_state === '售屋' && (query.selling_price_min !== undefined || query.selling_price_max !== undefined)) {
+          // 如果状态是出售，且查询条件中有售价范围，则检查是否符合
+          isMatch = checkSellRange(market, query);
+        } else if (market.market_state === '買房' && (query.rent_price_min !== undefined || query.rent_price_max !== undefined)) {
+          console.log(2)
+          // 如果状态是出租，且查询条件中有租金范围，则检查是否符合
+          isMatch = checkRentRange(market, query);
+        }
+        else if (!query.selling_price_max && !query.selling_price_min && !query.rent_price_max && !query.rent_price_min) {
+          console.log(45)
+          isMatch = true
+        }
+  
+        if (isMatch) {
+          processedResults.push({
+            tenement_id: tenement.id,
+            tenement_address: tenement.tenement_address,
+            tenement_face: tenement.tenement_face,
+            tenement_status: tenement.tenement_status,
+            tenement_type: '行銷追蹤',
+            tenement_product_type: tenement.tenement_product_type,
+            management_fee_bottom: 0, // 假设市场记录中不包含管理费信息
+            tenement_floor: determineFloorBasedOnMarket(market, query.floor_max, query.floor_min),
+            management_floor_bottom: determineFloorBasedOnMarket(market, query.floor_max, query.floor_min),
+          });
+        }
+      });
+    }
+  });
+
+  // 返回处理后的结果
+  const filteredResults = processedResults.filter(result => result.tenement_type && result.tenement_type !== '其他');
+  
+  return {
+    message: "Query successful",
+    data: filteredResults,
+  };
 }
 
 
@@ -2145,11 +2206,65 @@ function determineFloorBasedOnMarket(market,floorMin, floorMax) {
 
 function determineTypeBasedOnCreate(create) {
  
- 
+
+  
   if (create.Tenement_Rent && create.Tenement_Rent.length > 0) return '出租';
   if (create.Tenement_Sell && create.Tenement_Sell.length > 0) return '出售';
   if (create.Tenement_Develop && create.Tenement_Develop.length > 0) return '開發追蹤';
-  return 'Error';
+
+}
+
+// 示例检查函数
+
+function checkRentRange(market, query) {
+  const rentPriceMin = parseFloat(query.rent_price_min);
+  const rentPriceMax = parseFloat(query.rent_price_max);
+  const marketRentPriceMin = parseFloat(market.budget_rent_price_min);
+  const marketRentPriceMax = parseFloat(market.budget_rent_price_max);
+  
+  // 检查是否至少提供了一个查询条件
+  if (isNaN(rentPriceMin) && isNaN(rentPriceMax)) {
+    return false; // 没有提供任何查询条件
+  }
+
+  // 如果提供了min，检查市场最大值是否不低于min
+  if (!isNaN(rentPriceMin) && marketRentPriceMax < rentPriceMin) {
+    return false;
+  }
+
+  // 如果提供了max，检查市场最小值是否不高于max
+  if (!isNaN(rentPriceMax) && marketRentPriceMin > rentPriceMax) {
+    return false;
+  }
+
+  return true; // 市场范围至少部分与查询范围重叠
+}
+function checkSellRange(market, query) {
+  const sellingPriceMin = parseFloat(query.selling_price_min);
+  const sellingPriceMax = parseFloat(query.selling_price_max);
+  const marketSellingPriceMin = parseFloat(market.selling_price_min);
+  const marketSellingPriceMax = parseFloat(market.selling_price_max);
+
+  // 检查是否至少提供了一个查询条件
+  if (isNaN(sellingPriceMin) && isNaN(sellingPriceMax)) {
+    return false; // 没有提供任何查询条件，视为匹配
+  }
+
+  // 如果提供了min，检查市场最大值是否不低于min
+  if (!isNaN(sellingPriceMin) && marketSellingPriceMax < sellingPriceMin) {
+    return false;
+  }
+
+  // 如果提供了max，检查市场最小值是否不高于max
+  if (!isNaN(sellingPriceMax) && marketSellingPriceMin > sellingPriceMax) {
+    return false;
+  }
+
+  return true; // 市场范围至少部分与查询范围重叠
+}
+function checkRentAndSellRange(market, query) {
+  // 对于可租可售，检查是否同时符合租金和售价范围
+  return checkRentRange(market, query) || checkSellRange(market, query);
 }
 
 
