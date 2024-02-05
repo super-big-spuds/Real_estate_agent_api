@@ -1421,7 +1421,9 @@ const whereConditions: any = {
 };
    
 // 构建动态查询条件
-if (query.selling_price_min !== undefined || query.selling_price_max !== undefined || query.rent_price_min !== undefined || query.rent_price_max !== undefined) {
+if (query.selling_price_min !== undefined || query.selling_price_max !== undefined || query.rent_price_min !== undefined || query.rent_price_max !== undefined ||
+  
+  query.floor_min !== undefined || query.floor_max !== undefined) {
   whereConditions.Tenement_Create = {
     some: {
       AND: [
@@ -1429,6 +1431,8 @@ if (query.selling_price_min !== undefined || query.selling_price_max !== undefin
         ...(query.selling_price_max !== undefined ? [{ selling_price: { lte: parseInt(query.selling_price_max, 10) } }] : []),
         ...(query.rent_price_min !== undefined ? [{ rent_price: { gte: parseInt(query.rent_price_min, 10) } }] : []),
         ...(query.rent_price_max !== undefined ? [{ rent_price: { lte: parseInt(query.rent_price_max, 10) } }] : []),
+        ...(query.floor_min !== undefined ? [{ tenement_floor: { gte: parseInt(query.floor_min, 10) } }] : []),
+        ...(query.floor_max !== undefined ? [{ tenement_floor: { lte: parseInt(query.floor_max, 10) } }] : []),
       ].filter(condition => Object.keys(condition).length > 0), // 确保不添加空的条件
     },
   };
