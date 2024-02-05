@@ -497,7 +497,7 @@ export class TenementService {
       tenement_host_remark:
         tenementDevelop.Tenement_Create.tenement_host_remark,
     };
-
+    console.log(data)
     return { message: 'Successfully update the media', data };
   }
 
@@ -1420,18 +1420,19 @@ const whereConditions: any = {
   ...(query.tenement_status && { tenement_status: query.tenement_status }),
 };
    
-  if (query.selling_price_min || query.selling_price_max || query.rent_price_min || query.rent_price_max || query.floor_min || query.floor_max) {
-    whereConditions.Tenement_Create = {
-      some: {
-        ...(query.selling_price_min && { selling_price: { gte: parseInt(query.selling_price_min) } }),
-        ...(query.selling_price_max && { selling_price: { lte: parseInt(query.selling_price_max) } }),
-        ...(query.rent_price_min && { rent_price: { gte: parseInt(query.rent_price_min) } }),
-        ...(query.rent_price_max && { rent_price: { lte: parseInt(query.rent_price_max) } }),
-        ...(query.floor_min && { tenement_floor: { gte: parseInt(query.floor_min) } }),
-        ...(query.floor_max && { tenement_floor: { lte: parseInt(query.floor_max) } }),
-      }
-    };
-  }
+// 构建动态查询条件
+if (query.selling_price_min !== undefined || query.selling_price_max !== undefined || query.rent_price_min !== undefined || query.rent_price_max !== undefined) {
+  whereConditions.Tenement_Create = {
+    some: {
+      AND: [
+        ...(query.selling_price_min !== undefined ? [{ selling_price: { gte: parseInt(query.selling_price_min, 10) } }] : []),
+        ...(query.selling_price_max !== undefined ? [{ selling_price: { lte: parseInt(query.selling_price_max, 10) } }] : []),
+        ...(query.rent_price_min !== undefined ? [{ rent_price: { gte: parseInt(query.rent_price_min, 10) } }] : []),
+        ...(query.rent_price_max !== undefined ? [{ rent_price: { lte: parseInt(query.rent_price_max, 10) } }] : []),
+      ].filter(condition => Object.keys(condition).length > 0), // 确保不添加空的条件
+    },
+  };
+}
   console.log(whereConditions)
     const tenements = await this.prisma.tenement.findMany({
       
@@ -1440,7 +1441,7 @@ const whereConditions: any = {
       include: includeRelations,
     });
     
-    
+    console.log(tenements)
     const filteredTenements = tenements.filter(tenement =>
       tenement.Tenement_Create.some(create =>
         create.Tenement_Rent?.length > 0 || create.Tenement_Sell?.length > 0 || create.Tenement_Develop?.length > 0
@@ -1451,11 +1452,12 @@ const whereConditions: any = {
     // 处理获取到的Tenement记录
     const processedData = filteredTenements.map(tenement => {
       let managementFee = 0; // 默认managementFee为0
-      let tenementFloor  
+      let tenementFloor 
     
       // 检查Tenement_Market是否存在，且长度大于0
       if (tenement.Tenement_Market && tenement.Tenement_Market.length > 0) {
         const market = tenement.Tenement_Market[0]; // 假设我们取第一个Tenement_Market进行示例
+        tenementFloor = market.hopefloor_min; // 默认取hopefloor_min
         // 判断floor范围
       if (query.floor_min !== undefined && query.floor_max !== undefined) {
         const floorMin = parseInt(query.floor_min);
@@ -1486,7 +1488,6 @@ const whereConditions: any = {
         tenement_status: tenement.tenement_status,
         tenement_type: determineTenementType(tenement), // 这需要一个自定义函数来根据存在的数据确定类型
         tenement_product_type: tenement.tenement_product_type,
-        tenement_images: tenement.tenement_images,
         management_floor_bottom: tenementFloor,
         management_fee_bottom: managementFee, // 确保这是一个字符串，如果需要的话
       };
