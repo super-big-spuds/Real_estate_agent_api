@@ -1411,7 +1411,7 @@ export class TenementService {
       },
       Tenement_Market: types.includes('行銷追蹤'),
     };
-    console.log(includeRelations)
+
     const tenements = await this.prisma.tenement.findMany({
       where: {
         ...(query.tenement_address && { tenement_address: { contains: query.tenement_address } }),
@@ -1421,16 +1421,33 @@ export class TenementService {
       },
       include: includeRelations,
     });
+
+    
     const filteredTenements = tenements.filter(tenement =>
       tenement.Tenement_Create.some(create =>
-        create.Tenement_Rent?.length > 0 || create.Tenement_Sell?.length > 0|| create.Tenement_Develop?.length > 0 
-      )
+        create.Tenement_Rent?.length > 0 || create.Tenement_Sell?.length > 0 || create.Tenement_Develop?.length > 0
+      ) || (types.includes('行銷追蹤') && tenement.Tenement_Market.length > 0) // 添加对行銷追蹤的考虑
     );
+    
+    console.log(filteredTenements )
     // 处理获取到的Tenement记录
-    const processedData = filteredTenements.reduce((acc, tenement) => {
-  
-      const firstCreate = tenement.Tenement_Create[0]; // 假设我们取第一个Tenement_Create进行示例
-      acc.push({
+    const processedData = filteredTenements.map(tenement => {
+      let managementFee = 0; // 默认managementFee为0
+      let tenementFloor  
+    
+      // 检查Tenement_Market是否存在，且长度大于0
+      if (tenement.Tenement_Market && tenement.Tenement_Market.length > 0) {
+        const market = tenement.Tenement_Market[0]; // 假设我们取第一个Tenement_Market进行示例
+        tenementFloor = market.hopefloor_min // 设置tenementFloor为hopefloor_min
+      } else if (tenement.Tenement_Create && tenement.Tenement_Create.length > 0) {
+        // 如果有Tenement_Create数据，取第一个Tenement_Create来设置management_fee和tenement_floor
+        const firstCreate = tenement.Tenement_Create[0];
+        tenementFloor = firstCreate?.tenement_floor;
+        managementFee = firstCreate?.management_fee ?? 0;
+      }
+    
+      // 返回处理后的对象
+      return {
         tenement_id: tenement.id,
         tenement_address: tenement.tenement_address,
         tenement_face: tenement.tenement_face ?? 'Not Available',
@@ -1438,12 +1455,10 @@ export class TenementService {
         tenement_type: determineTenementType(tenement), // 这需要一个自定义函数来根据存在的数据确定类型
         tenement_product_type: tenement.tenement_product_type,
         tenement_images: tenement.tenement_images,
-        management_floor_bottom: firstCreate.tenement_floor ?? 'Not Available',
-        management_fee_bottom: firstCreate.management_fee ?? 'Not Available',
-      })
-  
-      return acc;
-    }, []);
+        management_floor_bottom: tenementFloor,
+        management_fee_bottom: managementFee, // 确保这是一个字符串，如果需要的话
+      };
+    });
   
     // 返回处理后的数据
     return {
@@ -2085,15 +2100,16 @@ function calculateFloor(market,tenement_floor_min,tenement_floor_max) {
 }
 
 function determineTenementType(tenement) {
-  const hasRent = tenement.Tenement_Create?.some(create => create.Tenement_Rent?.length > 0) ?? false;
-  const hasSell = tenement.Tenement_Create?.some(create => create.Tenement_Sell?.length > 0) ?? false;
-  const hasDevelop = tenement.Tenement_Create?.some(create => create.Tenement_Develop?.length > 0) ?? false;
-  const hasMarket = tenement.Tenement_Market?.length > 0 ?? false;
+  if (tenement.Tenement_Market?.length > 0) {
+    return '行銷追蹤';
+  }
+  const hasRent = tenement.Tenement_Create?.some(create => create.Tenement_Rent?.length > 0);
+  const hasSell = tenement.Tenement_Create?.some(create => create.Tenement_Sell?.length > 0);
+  const hasDevelop = tenement.Tenement_Create?.some(create => create.Tenement_Develop?.length > 0);
 
   if (hasRent) return '出租';
   if (hasSell) return '出售';
   if (hasDevelop) return '開發追蹤';
-  if (hasMarket) return '行銷追蹤';
-  return '未知类型';
+  return 'error'; // 或者根据您的业务逻辑提供默认值
 }
 
