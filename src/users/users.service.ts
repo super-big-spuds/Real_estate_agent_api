@@ -101,7 +101,10 @@ export class UsersService {
       where: {
         user_id: userId,
       },
-      data: updateDataWithPassword,
+      data: {
+        ...updateDataWithPassword,
+        isDeleted: false,
+      },
     });
   }
 
@@ -115,16 +118,29 @@ export class UsersService {
       },
     });
   }
+  async rollbackdeleteUser(userId: number): Promise<User> {
+    return this.prisma.user.update({
+      where: {
+        user_id: userId,
+      },
+      data: {
+        is_true_deleted: true,
+      },
+    });
+  }
 
-  async getUsers(): Promise<GetUserListDto[]> {
+  async getUsers(isDeleted: boolean): Promise<GetUserListDto[]> {
     return this.prisma.user.findMany({
+      where: {
+        isDeleted: isDeleted,
+        is_true_deleted: false,
+      },
       select: {
         user_id: true,
         user_name: true,
         user_email: true,
         status: true,
         isadmin: true,
-        isDeleted: true,
       },
     });
   }
@@ -133,6 +149,7 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({
       where: {
         user_id: userId,
+        is_true_deleted: false,
       },
       select: {
         user_id: true,
@@ -170,7 +187,7 @@ export class UsersService {
           user_email: adminEmail,
           user_password: hashedPassword,
           isadmin: true,
-          status: false,
+          status: true,
         },
       });
     } else {

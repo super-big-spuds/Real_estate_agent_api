@@ -104,6 +104,25 @@ export class UsersController {
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   @ApiBearerAuth()
+  @Delete('rollback/:user_id')
+  @ApiOperation({ summary: 'Delete a user' })
+  @ApiParam({ name: 'user_id', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'User successfully deleted.' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async RollbackdeleteUser(
+    @Request() req,
+    @Param('user_id', ParseIntPipe) userId: number,
+  ) {
+    const userisAdmin = req.user.isadmin;
+    if (userisAdmin === true) {
+      return this.usersService.rollbackdeleteUser(userId);
+    } else {
+      throw new ForbiddenException('Access Denied');
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  @ApiBearerAuth()
   @Put(':user_id')
   @ApiOperation({ summary: 'Update a user' })
   @ApiParam({ name: 'user_id', description: 'User ID' })
@@ -132,7 +151,25 @@ export class UsersController {
     const userisAdmin = req.user.isadmin;
 
     if (userisAdmin === true) {
-      return this.usersService.getUsers();
+      return this.usersService.getUsers(false);
+    } else {
+      throw new ForbiddenException('Access Denied');
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  @ApiBearerAuth()
+  @Get('rollback/list')
+  @ApiOperation({ summary: 'Get user Roll Back list' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved Roll Back user data',
+  })
+  async getRollBackUsers(@Request() req) {
+    const userisAdmin = req.user.isadmin;
+
+    if (userisAdmin === true) {
+      return this.usersService.getUsers(true);
     } else {
       throw new ForbiddenException('Access Denied');
     }

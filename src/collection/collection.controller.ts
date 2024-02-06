@@ -30,6 +30,21 @@ export class CollectionController {
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   @ApiBearerAuth()
+  @Get('rollback')
+  @ApiOperation({ summary: 'Get all rollback collections' })
+  async getAllRollBackCollections(@Request() req) {
+    const userisadmin = req.user.isadmin;
+    if (userisadmin === true) {
+      return this.collectionService.getAllCollections(true);
+    } else {
+      return this.collectionService.getCollectionsByUserId(
+        req.user.userId,
+        true,
+      );
+    }
+  }
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  @ApiBearerAuth()
   @Get(':id')
   @ApiOperation({ summary: 'Get collection by ID' })
   @ApiParam({ name: 'id', description: 'Collection ID' })
@@ -55,9 +70,12 @@ export class CollectionController {
   async getAllCollections(@Request() req) {
     const userisadmin = req.user.isadmin;
     if (userisadmin === true) {
-      return this.collectionService.getAllCollections();
+      return this.collectionService.getAllCollections(false);
     } else {
-      return this.collectionService.getCollectionsByUserId(req.user.userId);
+      return this.collectionService.getCollectionsByUserId(
+        req.user.userId,
+        false,
+      );
     }
   }
 
@@ -105,5 +123,14 @@ export class CollectionController {
   @ApiParam({ name: 'id', description: 'Collection ID' })
   async deleteCollection(@Param('id', ParseIntPipe) id: number) {
     return this.collectionService.deleteCollection(id);
+  }
+
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  @ApiBearerAuth()
+  @Delete('rollback/:id')
+  @ApiOperation({ summary: 'Delete a collection' })
+  @ApiParam({ name: 'id', description: 'Collection ID' })
+  async deleteTrueCollection(@Param('id', ParseIntPipe) id: number) {
+    return this.collectionService.deleteTrueCollection(id);
   }
 }

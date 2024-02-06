@@ -82,7 +82,8 @@ export class CreateTenementMarketDto {
 
   @ApiProperty({ example: 'Active', description: 'Market state' })
   market_state: string;
-
+  
+  @Transform(({ value }) => Number(value))
   @ApiProperty({ example: 'Active', description: 'Market state' ,required:false})
   tenement_id: number;
 }

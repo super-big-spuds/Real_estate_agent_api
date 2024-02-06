@@ -118,6 +118,7 @@ export class CreateTenementSellDto {
   @ApiProperty({ example: 'Additional remarks about the buyer', description: 'Buyer remark' })
   buyer_remark: string;
 
+  @Transform(({ value }) => Number(value))
   @ApiProperty({ example: 'Additional remarks about the Tenement Id', description: 'Tenement ID' })
   tenement_id : number;
 

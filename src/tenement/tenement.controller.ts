@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import {
   Controller,
   Get,
@@ -10,6 +9,7 @@ import {
   UseGuards,
   Request,
   Query,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -48,28 +48,42 @@ export class TenementController {
     description: 'Successfully retrieved tenements.',
   })
   @ApiResponse({ status: 404, description: 'Tenement not found' })
-  async getAllTenements(@Request() req, @Query() query: TenementQueryDto){
+  async getAllTenements(@Request() req, @Query() query: TenementQueryDto) {
     const userisadmin = req.user.isadmin;
     const hasQueryParams = Object.keys(query).length > 0;
     if (hasQueryParams) {
       if (userisadmin === true) {
-        return this.tenementService.getFilteredTenements(query);
+        return this.tenementService.getFilteredTenements(query, false);
       } else {
         return this.tenementService.getFilteredTenementsForUser(
           query,
           req.user.userId,
+          false,
         );
       }
     } else {
       if (userisadmin === true) {
-        return this.tenementService.getAllTenements();
-        
+        return this.tenementService.getAllTenements(false);
       } else {
-       
-        return this.tenementService.getTenementsByUserId(req.user.userId);
-        
+        return this.tenementService.getTenementsByUserId(
+          req.user.userId,
+          false,
+        );
       }
     }
+  }
+
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  @ApiBearerAuth()
+  @Get('rollback')
+  @ApiOperation({ summary: 'Get all or filtered tenements' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved tenements.',
+  })
+  @ApiResponse({ status: 404, description: 'Tenement not found' })
+  async getAllRollBackTenements() {
+    return this.tenementService.getAllTenements(true);
   }
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
@@ -78,6 +92,7 @@ export class TenementController {
   @ApiOperation({ summary: 'Get all tenement sells' })
   async getAllTenementSells(@Request() req, @Query() query: TenementQueryDto) {
     const userisadmin = req.user.isadmin;
+    0;
     const hasQueryParams = Object.keys(query).length > 0;
 
     if (hasQueryParams) {
@@ -277,6 +292,27 @@ export class TenementController {
     @Param('tenementId', ParseIntPipe) tenementId: number,
   ) {
     return this.tenementService.deleteTenementRent(tenementId);
+  }
+
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  @ApiBearerAuth()
+  @Delete('/delete/rollback/:tenementType/:tenementId')
+  @ApiOperation({ summary: 'Rollback deletion of a specific tenement type' })
+  async rollbackDeleteTenement(
+    @Param('tenementId', ParseIntPipe) tenementId: number,
+    @Param('tenementType') tenementType: string,
+    @Request() req,
+  ): Promise<any> {
+    if (!req.user.isadmin) {
+      throw new ForbiddenException(
+        'You do not have permission to perform this action',
+      );
+    }
+
+    return this.tenementService.rollbackDeleteTenement(
+      tenementId,
+      tenementType,
+    );
   }
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)

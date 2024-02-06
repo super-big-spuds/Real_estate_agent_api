@@ -91,12 +91,18 @@ export class CollectionService {
     };
   }
 
-  async getAllCollections(): Promise<{
+  async getAllCollections(isDeleted: boolean): Promise<{
     message: string;
     data: CollectionDto[];
   }> {
+    console.log('isDeleted', isDeleted);
     try {
-      const collections = await this.prisma.collection.findMany();
+      const collections = await this.prisma.collection.findMany({
+        where: {
+          is_deleted: isDeleted, // 使用 isDeleted 参数动态过滤数据
+          is_true_deleted: false,
+        },
+      });
       const data = collections.map((collection) => ({
         collection_name: collection.collection_name,
         tenement_address: collection.tenement_no,
@@ -114,12 +120,14 @@ export class CollectionService {
 
   async getCollectionsByUserId(
     userId: number,
+    isDeleted: boolean,
   ): Promise<{ message: string; data: CollectionDto[] }> {
     try {
       const collections = await this.prisma.collection.findMany({
         where: {
           owner: userId,
-          is_deleted: false,
+          is_deleted: isDeleted,
+          is_true_deleted: false,
         },
       });
       const data = collections.map((collection) => ({
@@ -161,7 +169,10 @@ export class CollectionService {
     try {
       await this.prisma.collection.update({
         where: { id },
-        data: collectionData,
+        data: {
+          ...collectionData,
+          is_deleted: false,
+        },
       });
       return { message: 'Successfully update the media' };
     } catch (error) {
@@ -184,6 +195,20 @@ export class CollectionService {
         data: { is_deleted: true },
       });
       return { message: 'Successfully delete the media' };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'An error occurred while deleting the collection.',
+      );
+    }
+  }
+
+  async deleteTrueCollection(id: number): Promise<{ message: string }> {
+    try {
+      await this.prisma.collection.update({
+        where: { id },
+        data: { is_true_deleted: true },
+      });
+      return { message: 'Successfully delete the  media' };
     } catch (error) {
       throw new InternalServerErrorException(
         'An error occurred while deleting the collection.',

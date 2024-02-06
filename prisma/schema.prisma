@@ -19,6 +19,7 @@ model Tenement {
   updatedAt             DateTime          @updatedAt
   owner                 Int
   is_deleted            Boolean           @default(false)
+  is_true_deleted            Boolean           @default(false)
   Tenement_Market       Tenement_Market[]
   Tenement_Notice       Tenement_Notice[]
   User                  User              @relation(fields: [owner], references: [user_id])
@@ -45,6 +46,7 @@ model Tenement_Market {
   hopefloor_min                    Int
   market_state                     String
   is_deleted                       Boolean  @default(false)
+  is_true_deleted            Boolean           @default(false)
   createdAt                        DateTime @default(now())
   updatedAt                        DateTime @updatedAt
   Tenement                         Tenement @relation(fields: [tenement_id], references: [id])
@@ -53,6 +55,7 @@ model Tenement_Market {
 model Tenement_Rent {
   tenement_id            Int             @id
   is_deleted             Boolean         @default(false)
+  is_true_deleted Boolean         @default(false)
   tenement_status        String
   renter_start_date      String
   renter_end_date        String
@@ -71,6 +74,7 @@ model Tenement_Rent {
 model Tenement_Develop {
   tenement_id     Int             @id
   is_deleted      Boolean         @default(false)
+  is_true_deleted Boolean         @default(false)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   Tenement_Create Tenement_Create @relation(fields: [tenement_id], references: [tenement_id])
@@ -86,8 +90,10 @@ model Tenement_Sell {
   buyer_phone        String
   buyer_jobtitle     String
   buyer_remark       String
+  is_true_deleted            Boolean           @default(false)
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
+
   Tenement_Create    Tenement_Create @relation(fields: [tenement_id], references: [tenement_id])
 }
 
@@ -141,6 +147,7 @@ model Collection {
   updatedAt              DateTime            @updatedAt
   owner                  Int
   is_deleted             Boolean
+  is_true_deleted            Boolean           @default(false)
   User                   User                @relation(fields: [owner], references: [user_id])
   Collection_Notice      Collection_Notice[]
 }
@@ -179,6 +186,7 @@ model User {
   user_password    String
   isadmin          Boolean           @default(false)
   isDeleted        Boolean           @default(false)
+  is_true_deleted            Boolean           @default(false)
   status           Boolean
   Tenements        Tenement[]
   Collections      Collection[]
