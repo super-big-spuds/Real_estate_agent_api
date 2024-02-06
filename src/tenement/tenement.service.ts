@@ -97,7 +97,7 @@ export class TenementService {
             tenement_type: "行銷追蹤", // 标识这是一个"Market"条目
             tenement_product_type: cur.tenement_product_type,
             management_fee_bottom: tenementCreate ? tenementCreate.management_fee : marketTenement ? marketTenement.burget_rent_min : null,
-          management_floor_bottom: tenementCreate ? tenementCreate.tenement_floor : marketTenement ? marketTenement.hopefloor_min : null,
+          management_floor_bottom: marketTenement ? marketTenement.hopefloor_min : 0
           });
         }
       }
